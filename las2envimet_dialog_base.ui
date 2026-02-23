@@ -1,0 +1,1238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LAS2ENVImetDialogBase</class>
+ <widget class="QDialog" name="LAS2ENVImetDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>1000</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>LAS to ENVI-met Tree Converter</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>10</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents_3">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>-293</y>
+        <width>974</width>
+        <height>1258</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="title">
+          <string>Load and Select</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="btnSelectROI">
+            <property name="toolTip">
+             <string>Draw a polygon to select the region of interest (single tree). Right-click to finish.</string>
+            </property>
+            <property name="text">
+             <string>Select ROI (Polygon)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_36">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Select the LAS/LAZ file containing the tree point cloud.</string>
+            </property>
+            <property name="text">
+             <string>LAS/LAZ point cloud file</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QgsFileWidget" name="fileSource">
+            <property name="toolTip">
+             <string>Select the LAS/LAZ file containing the tree point cloud.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_32">
+            <property name="toolTip">
+             <string>Draw a polygon to select the region of interest (single tree). Right-click to finish.</string>
+            </property>
+            <property name="text">
+             <string>Draw ROI polygon (single tree only)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignVCenter">
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="title">
+          <string>Trunk Selection</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="6" column="1">
+           <widget class="QLabel" name="label_25">
+            <property name="toolTip">
+             <string>Automatically detected tree dimensions based on the point cloud.</string>
+            </property>
+            <property name="text">
+             <string>Tree height (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="lblStemCoords">
+            <property name="toolTip">
+             <string>Shows the coordinates (X, Y) of the selected trunk point. Z is automatically set to the minimum of the point cloud.</string>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="text">
+             <string>Trunk coordinates (X, Y)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QLabel" name="label_29">
+            <property name="toolTip">
+             <string>Display points within the selected Z-percentile range as a temporary layer.</string>
+            </property>
+            <property name="text">
+             <string>Visible Z‑range [%]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLineEdit" name="lineHeight">
+            <property name="toolTip">
+             <string>Automatically detected tree dimensions based on the point cloud.</string>
+            </property>
+            <property name="text">
+             <string>Detected tree height (m)</string>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLabel" name="label_26">
+            <property name="toolTip">
+             <string>Automatically detected tree dimensions based on the point cloud.</string>
+            </property>
+            <property name="text">
+             <string>Crown extend X (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLineEdit" name="lineWidthX">
+            <property name="toolTip">
+             <string>Automatically detected tree dimensions based on the point cloud.</string>
+            </property>
+            <property name="text">
+             <string>Detected crown width X (m)</string>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4">
+           <widget class="QDoubleSpinBox" name="spinZFilterUp">
+            <property name="toolTip">
+             <string>Upper percentile of points to display (must be ≥ lower percentile).</string>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>10.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QgsMapLayerComboBox" name="mMapLayerComboBox">
+            <property name="toolTip">
+             <string>Choose the point cloud layer to work with (loaded via file selector above).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_28">
+            <property name="toolTip">
+             <string>Choose the point cloud layer to work with (loaded via file selector above).</string>
+            </property>
+            <property name="text">
+             <string>Select Point Cloud Layer</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="4">
+           <widget class="QLabel" name="label_37">
+            <property name="text">
+             <string>                                      </string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="spinZFilter">
+            <property name="toolTip">
+             <string>Lower percentile of points to display (0 = bottom, 100 = top).</string>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>5.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="btnSelectStem">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Click on the map to select the trunk base point.</string>
+            </property>
+            <property name="text">
+             <string>Select trunk point</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="btnFilterCloud">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Display points within the selected Z-percentile range as a temporary layer.</string>
+            </property>
+            <property name="text">
+             <string>Apply Z‑filter</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLineEdit" name="lineWidthY">
+            <property name="toolTip">
+             <string>Automatically detected tree dimensions based on the point cloud.</string>
+            </property>
+            <property name="text">
+             <string>Detected crown width Y (m)</string>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QLabel" name="label_27">
+            <property name="toolTip">
+             <string>Automatically detected tree dimensions based on the point cloud.</string>
+            </property>
+            <property name="text">
+             <string>Crown extend Y (m)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Scaling and Rotation</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="4" column="2" colspan="2">
+           <widget class="QPushButton" name="btnResetTransform">
+            <property name="toolTip">
+             <string>Reset scaling and rotation to the original dimensions and remove preview.</string>
+            </property>
+            <property name="text">
+             <string>Reset to original</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QDoubleSpinBox" name="spinTargetWidthY">
+            <property name="toolTip">
+             <string>Desired tree width in Y direction after scaling (meters).</string>
+            </property>
+            <property name="specialValueText">
+             <string>Target Width Y (m)</string>
+            </property>
+            <property name="maximum">
+             <double>250.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QDoubleSpinBox" name="spinTargetHeight">
+            <property name="toolTip">
+             <string>Desired tree height after scaling (meters).</string>
+            </property>
+            <property name="specialValueText">
+             <string>Target Height (m)</string>
+            </property>
+            <property name="maximum">
+             <double>250.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_35">
+            <property name="toolTip">
+             <string>Desired tree width in Y direction after scaling (meters).</string>
+            </property>
+            <property name="text">
+             <string>Target width Y (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1" colspan="3">
+           <widget class="QLabel" name="label">
+            <property name="toolTip">
+             <string>Rotation angle in degrees. Positive = clockwise, negative = counter‑clockwise.</string>
+            </property>
+            <property name="text">
+             <string>Rotation angle (clockwise +) [°]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QDoubleSpinBox" name="spinRotation">
+            <property name="toolTip">
+             <string>Rotation angle in degrees. Positive = clockwise, negative = counter‑clockwise.</string>
+            </property>
+            <property name="minimum">
+             <double>-360.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_33">
+            <property name="toolTip">
+             <string>Desired tree height after scaling (meters).</string>
+            </property>
+            <property name="text">
+             <string>Target height (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_34">
+            <property name="toolTip">
+             <string>Desired tree width in X direction after scaling (meters).</string>
+            </property>
+            <property name="text">
+             <string>Target width X (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QPushButton" name="btnPreviewScale">
+            <property name="toolTip">
+             <string>Apply scaling and rotation and show a preview point cloud (downsampled for performance).</string>
+            </property>
+            <property name="text">
+             <string>Preview scaling &amp; rotation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="lblScaleFactor">
+            <property name="text">
+             <string>Scale factors (X, Y, Z)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QDoubleSpinBox" name="spinTargetWidthX">
+            <property name="toolTip">
+             <string>Desired tree width in X direction after scaling (meters).</string>
+            </property>
+            <property name="specialValueText">
+             <string>Target Width X (m)</string>
+            </property>
+            <property name="maximum">
+             <double>250.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Voxelize and Calibrate LAD</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0" colspan="3">
+           <widget class="QPushButton" name="btnCreateVoxels">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Generate a 1 m voxel grid from the transformed point cloud. Enables further LAD tools.</string>
+            </property>
+            <property name="text">
+             <string>Generate voxel grid</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QDoubleSpinBox" name="spinLADValue">
+            <property name="toolTip">
+             <string>Enter the LAD value (m²/m³) for the selected reference voxel.</string>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0" colspan="2">
+           <widget class="QPushButton" name="btnCalculateLAD">
+            <property name="toolTip">
+             <string>Calculate LAD for all voxels based on the reference voxels (scaling factor = average LAD/point ratio).</string>
+            </property>
+            <property name="text">
+             <string>Calculate LAD</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QSpinBox" name="spinZLevel">
+            <property name="toolTip">
+             <string>Select the Z‑level (height slice) to display in the map.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="btnSelectRefVoxel">
+            <property name="toolTip">
+             <string>Activate tool to pick a reference voxel on the map. Click on a voxel to select it.</string>
+            </property>
+            <property name="text">
+             <string>Pick reference voxel</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="btnAddRefVoxel">
+            <property name="toolTip">
+             <string>Add the picked voxel with its LAD value to the reference list.</string>
+            </property>
+            <property name="text">
+             <string>Add to list</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QPushButton" name="btnRemoveRefVoxel">
+            <property name="toolTip">
+             <string>Remove the selected reference voxel from the list.</string>
+            </property>
+            <property name="text">
+             <string>Remove selected</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="label_3">
+            <property name="toolTip">
+             <string>Enter the LAD value (m²/m³) for the selected reference voxel.</string>
+            </property>
+            <property name="text">
+             <string>Reference LAD value (m²/m³)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3" rowspan="7">
+           <widget class="QListWidget" name="listRefVoxels">
+            <property name="toolTip">
+             <string>List of reference voxels with their LAD and point counts. Used for calibration.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="label_2">
+            <property name="toolTip">
+             <string>Select the Z‑level (height slice) to display in the map.</string>
+            </property>
+            <property name="text">
+             <string>Z‑level (m)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Tree Refinement</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="9" column="0" colspan="3">
+           <widget class="QPushButton" name="btnApplyRefinement">
+            <property name="toolTip">
+             <string>Apply the current refinement settings (crown factor, trunk, threshold, clear ground) to the LAD values.</string>
+            </property>
+            <property name="text">
+             <string>Apply refinement</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLabel" name="label_5">
+            <property name="toolTip">
+             <string>Height up to which the trunk LAD value is set (including this level).</string>
+            </property>
+            <property name="text">
+             <string>Trunk height (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSpinBox" name="spinCrownZMin">
+            <property name="toolTip">
+             <string>Minimum Z‑level (in meters) where the crown factor is applied.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QSpinBox" name="spinTrunkHeight">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Height up to which the trunk LAD value is set (including this level).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QSpinBox" name="spinCrownZMax">
+            <property name="toolTip">
+             <string>Maximum Z‑level (in meters) where the crown factor is applied.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="lblTreeHeightInfo">
+            <property name="text">
+             <string>Tree height: -- cells (Z: min to max)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="4">
+           <widget class="QLabel" name="label_8">
+            <property name="toolTip">
+             <string>LAD value (m²/m³) to assign to trunk voxels.</string>
+            </property>
+            <property name="text">
+             <string>Trunk LAD value (m²/m³)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QLabel" name="label_9">
+            <property name="toolTip">
+             <string>Voxels with LAD below this value will be set to 0 (affects both visualization and export).</string>
+            </property>
+            <property name="text">
+             <string>LAD threshold (m²/m³)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="3">
+           <widget class="QDoubleSpinBox" name="spinTrunkLAD">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>LAD value (m²/m³) to assign to trunk voxels.</string>
+            </property>
+            <property name="value">
+             <double>5.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QDoubleSpinBox" name="spinLADThreshold">
+            <property name="toolTip">
+             <string>Voxels with LAD below this value will be set to 0 (affects both visualization and export).</string>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_6">
+            <property name="toolTip">
+             <string>Minimum Z‑level (in meters) where the crown factor is applied.</string>
+            </property>
+            <property name="text">
+             <string>Range min Z (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="3">
+           <widget class="QLabel" name="label_4">
+            <property name="toolTip">
+             <string>Factor to multiply LAD in the selected Z‑range (e.g., 1.2 = +20%, 0.8 = –20%).</string>
+            </property>
+            <property name="text">
+             <string>Enhance/Thin factor (e.g., 1.2 = +20%)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0" colspan="5">
+           <widget class="QCheckBox" name="checkClearGround">
+            <property name="toolTip">
+             <string>Keep only the trunk voxel at Z=0; all other voxels in the ground layer are set to 0.</string>
+            </property>
+            <property name="text">
+             <string>Keep only trunk voxel at Z=0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="checkTrunkEnhance">
+            <property name="toolTip">
+             <string>Enable manual assignment of a fixed LAD value to trunk voxels.</string>
+            </property>
+            <property name="text">
+             <string>Override trunk LAD</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="3" colspan="3">
+           <widget class="QPushButton" name="btnResetRefinement">
+            <property name="toolTip">
+             <string>Reset LAD to the state after the last 'Calculate LAD'.</string>
+            </property>
+            <property name="text">
+             <string>Reset to calculated LAD</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QDoubleSpinBox" name="spinCrownFactor">
+            <property name="toolTip">
+             <string>Factor to multiply LAD in the selected Z‑range (e.g., 1.2 = +20%, 0.8 = –20%).</string>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="label_7">
+            <property name="toolTip">
+             <string>Maximum Z‑level (in meters) where the crown factor is applied.</string>
+            </property>
+            <property name="text">
+             <string>Range max Z (m)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupManualParams">
+         <property name="title">
+          <string>Plant Physical Parameters</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="1" column="2">
+           <widget class="QDoubleSpinBox" name="spinCompPoint25">
+            <property name="toolTip">
+             <string>CO₂ compensation point at 25 °C (ppm).</string>
+            </property>
+            <property name="value">
+             <double>45.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QCheckBox" name="checkManualParams">
+            <property name="toolTip">
+             <string>Enable manual editing of A‑gs parameters. When checked, the preset selection is disabled.</string>
+            </property>
+            <property name="text">
+             <string>Edit A‑gs parameters manually</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="6">
+           <widget class="QLabel" name="lblAmmaxRange">
+            <property name="toolTip">
+             <string>Lower and upper temperature limits for assimilation function (°C).</string>
+            </property>
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QDoubleSpinBox" name="spinGmQ10">
+            <property name="toolTip">
+             <string>Q10 for mesophyll conductance.</string>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QDoubleSpinBox" name="spinTransmittance">
+            <property name="toolTip">
+             <string>Leaf transmittance (0–1). Typical range: 0.2–0.4.</string>
+            </property>
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.300000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="4">
+           <widget class="QLabel" name="label_18">
+            <property name="toolTip">
+             <string>Quantum yield (µmol µmol⁻¹).</string>
+            </property>
+            <property name="text">
+             <string>Quantum yield e0 (µmol µmol⁻¹)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="5">
+           <widget class="QDoubleSpinBox" name="spinAmmaxQ10">
+            <property name="toolTip">
+             <string>Q10 for maximum assimilation.</string>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>2.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QDoubleSpinBox" name="spinDmax">
+            <property name="toolTip">
+             <string>Maximum vapor pressure deficit (hPa).</string>
+            </property>
+            <property name="decimals">
+             <number>2</number>
+            </property>
+            <property name="singleStep">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>20.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="4">
+           <widget class="QLabel" name="label_21">
+            <property name="toolTip">
+             <string>Maximum vapor pressure deficit (hPa).</string>
+            </property>
+            <property name="text">
+             <string>Max. vapor pressure deficit dmax (hPa)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="6">
+           <widget class="QLabel" name="label_16">
+            <property name="toolTip">
+             <string>Maximum assimilation rate at 25 °C (µmol m⁻² s⁻¹).</string>
+            </property>
+            <property name="text">
+             <string>Maximum assimilation Ammax at 25°C (µmol m⁻² s⁻¹)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="6">
+           <widget class="QLabel" name="label_14">
+            <property name="toolTip">
+             <string>Mesophyll conductance at 25 °C (mmol m⁻² s⁻¹).</string>
+            </property>
+            <property name="text">
+             <string>Mesophyll conductance gm at 25°C (mmol m⁻² s⁻¹)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2">
+           <widget class="QDoubleSpinBox" name="spinE0">
+            <property name="toolTip">
+             <string>Quantum yield (µmol µmol⁻¹).</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="singleStep">
+             <double>0.001000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.017000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="4">
+           <widget class="QLabel" name="label_20">
+            <property name="toolTip">
+             <string>Cuticular conductance (mmol m⁻² s⁻¹).</string>
+            </property>
+            <property name="text">
+             <string>Cuticular conductance gc (mmol m⁻² s⁻¹)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QDoubleSpinBox" name="spinAlbedo">
+            <property name="toolTip">
+             <string>Leaf albedo (0–1). Typical range: 0.15–0.25.</string>
+            </property>
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.180000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5">
+           <widget class="QDoubleSpinBox" name="spinGm25">
+            <property name="toolTip">
+             <string>Mesophyll conductance at 25 °C (mmol m⁻² s⁻¹).</string>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>3.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_10">
+            <property name="toolTip">
+             <string>Leaf albedo (0–1). Typical range: 0.15–0.25.</string>
+            </property>
+            <property name="text">
+             <string>Leaf albedo (0–1)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="7">
+           <widget class="QDoubleSpinBox" name="spinAmmaxT2">
+            <property name="toolTip">
+             <string>Lower and upper temperature limits for assimilation function (°C).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="5">
+           <widget class="QDoubleSpinBox" name="spinAmmax25">
+            <property name="toolTip">
+             <string>Maximum assimilation rate at 25 °C (µmol m⁻² s⁻¹).</string>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="6">
+           <widget class="QLabel" name="label_15">
+            <property name="toolTip">
+             <string>Q10 for mesophyll conductance.</string>
+            </property>
+            <property name="text">
+             <string>Q10 for mesophyll conductance</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="6">
+           <widget class="QLabel" name="label_17">
+            <property name="toolTip">
+             <string>Q10 for maximum assimilation.</string>
+            </property>
+            <property name="text">
+             <string>Q10 for maximum assimilation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QComboBox" name="comboSpecies">
+            <property name="toolTip">
+             <string>Select a predefined tree species to load typical A‑gs parameters.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="QLabel" name="label_13">
+            <property name="toolTip">
+             <string>Q10 factor for temperature dependence of compensation point.</string>
+            </property>
+            <property name="text">
+             <string>Q10 for compensation point</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4">
+           <widget class="QLabel" name="label_19">
+            <property name="toolTip">
+             <string>Maximum transpiration factor (0–1).</string>
+            </property>
+            <property name="text">
+             <string>Max. transpiration factor f0 (0–1)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_22">
+            <property name="toolTip">
+             <string>Select a predefined tree species to load typical A‑gs parameters.</string>
+            </property>
+            <property name="text">
+             <string>Tree species preset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QDoubleSpinBox" name="spinGc">
+            <property name="toolTip">
+             <string>Cuticular conductance (mmol m⁻² s⁻¹).</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.020000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="5">
+           <widget class="QDoubleSpinBox" name="spinGmT1">
+            <property name="toolTip">
+             <string>Lower and upper temperature limits for mesophyll conductance function (°C).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_11">
+            <property name="toolTip">
+             <string>Leaf transmittance (0–1). Typical range: 0.2–0.4.</string>
+            </property>
+            <property name="text">
+             <string>Leaf transmittance (0–1)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QDoubleSpinBox" name="spinCompPointQ10">
+            <property name="toolTip">
+             <string>Q10 factor for temperature dependence of compensation point.</string>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="5">
+           <widget class="QDoubleSpinBox" name="spinAmmaxT1">
+            <property name="toolTip">
+             <string>Lower and upper temperature limits for assimilation function (°C).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QLabel" name="label_12">
+            <property name="toolTip">
+             <string>CO₂ compensation point at 25 °C (ppm).</string>
+            </property>
+            <property name="text">
+             <string>Compensation point Γ at 25°C (ppm)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="6">
+           <widget class="QLabel" name="lblGmRange">
+            <property name="toolTip">
+             <string>Lower and upper temperature limits for mesophyll conductance function (°C).</string>
+            </property>
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="7">
+           <widget class="QDoubleSpinBox" name="spinGmT2">
+            <property name="toolTip">
+             <string>Lower and upper temperature limits for mesophyll conductance function (°C).</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QDoubleSpinBox" name="spinF0">
+            <property name="toolTip">
+             <string>Maximum transpiration factor (0–1).</string>
+            </property>
+            <property name="decimals">
+             <number>2</number>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.700000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QDoubleSpinBox" name="spinEmissivity">
+            <property name="maximum">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.960000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="label_38">
+            <property name="text">
+             <string>Leaf emissivity (0-1)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Save and Export</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_30">
+            <property name="toolTip">
+             <string>Path to the ENVI‑met projectdatabase.edb file. If provided, the plant will be added automatically.</string>
+            </property>
+            <property name="text">
+             <string>Select your ENVI‑met database (.edb)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="btnExport">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+              <underline>false</underline>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Export the tree as ENVI‑met .txt file and update the database if a valid path is given.</string>
+            </property>
+            <property name="text">
+             <string>Export to ENVI‑met</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="lineDescription">
+            <property name="toolTip">
+             <string>Optional description of the plant (e.g., species, location).</string>
+            </property>
+            <property name="text">
+             <string>Tree generated using the LAS2ENVImet QGIS-Plugin</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_24">
+            <property name="toolTip">
+             <string>Optional description of the plant (e.g., species, location).</string>
+            </property>
+            <property name="text">
+             <string>Description (optional)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="label_31">
+            <property name="toolTip">
+             <string>Location where the generated .txt plant file will be saved. Defaults to Documents/PlantID.txt.</string>
+            </property>
+            <property name="text">
+             <string>Output .txt file location</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QgsExternalResourceWidget" name="fileDatabase">
+            <property name="toolTip">
+             <string>Path to the ENVI‑met projectdatabase.edb file. If provided, the plant will be added automatically.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_23">
+            <property name="toolTip">
+             <string>Unique 6‑character plant identifier (letters and numbers).</string>
+            </property>
+            <property name="text">
+             <string>Plant ID (6 characters)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="linePlantID">
+            <property name="toolTip">
+             <string>Unique 6‑character plant identifier (letters and numbers).</string>
+            </property>
+            <property name="text">
+             <string>ID1234</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QgsExternalResourceWidget" name="fileOutput">
+            <property name="toolTip">
+             <string>Location where the generated .txt plant file will be saved. Defaults to Documents/PlantID.txt.</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsExternalResourceWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsexternalresourcewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsFileWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsfilewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,41 @@
+[general]
+name=LAS to ENVI-met Tree Converter
+qgisMinimumVersion=3.10
+description=Converts LAS/LAZ point clouds into ENVI‑met tree models with Leaf Area Density (LAD) calculation and A‑gs physiological parameterisation
+version=1.0
+author=Peer Schöneberger
+email=P.Schoeneberger@geo.uni-mainz.de
+
+about=This plugin provides a complete workflow to convert LiDAR point clouds (LAS/LAZ format) into 3D tree models suitable for the microclimate simulation software ENVI‑met. Users can interactively select a trunk point and define a region of interest, apply percentile‑based filtering to isolate tree points, and then scale, rotate, or translate the point cloud to match desired dimensions. The plugin voxelises the data at 1 m resolution and calculates Leaf Area Density (LAD) values using user‑selected reference voxels. Further refinements such as crown factor adjustment, trunk enhancement, LAD thresholding, and ground clearing are available. Physiological A‑gs parameters can be chosen from species presets or entered manually. The final tree can be exported as an ENVI‑met plant file (.txt) and optionally inserted directly into an existing project database. Designed for researchers and urban planners, the plugin bridges the gap between high‑resolution LiDAR data and microclimate modelling in ENVI‑met.
+
+tracker=https://github.com/peer-schoeneberger/las2ENVImet/issues
+repository=https://github.com/peer-schoeneberger/las2ENVImet
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=LiDAR,LAS,LAD,ENVI-met,envimet,voxel,tree,urban forestry,microclimate,point cloud,vegetation,urban climate
+
+homepage=https://github.com/peer-schoeneberger/las2ENVImet#readme
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Python dependencies: laspy, numpy (and matplotlib for faster polygon point-in-test) – please install via pip
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+#category=Analysis
+
+# If the plugin can run on QGIS Server.
+server=False
+

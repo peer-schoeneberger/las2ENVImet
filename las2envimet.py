@@ -5,7 +5,6 @@ import os
 import time
 import tempfile
 import numpy as np
-import laspy
 
 from qgis.core import (QgsProject, Qgis, QgsMapLayerProxyModel, QgsMapLayerType, QgsPointCloudLayer, QgsPointXY)
 from qgis.gui import QgsMessageBar, QgsFileWidget
@@ -17,7 +16,7 @@ from typing import Optional, List, Dict, Any
 from .resources import *
 from .las2envimet_dialog import LAS2ENVImetDialog
 from .ags_presets import AGS_PRESETS
-from .file_utils import load_point_cloud, save_filtered_las
+from .file_utils import load_point_cloud, save_filtered_las, _ensure_laspy
 from .tree_model import TreeModel
 from .export_manager import ExportManager
 from .map_tools import PointTool
@@ -41,6 +40,7 @@ class LAS2ENVImet:
         self.applied_threshold = 0.0
         self.lad_calculated = False
         self.last_picked_point: Optional[tuple] = None
+        self._matplotlib_warning_shown = False
 
     def tr(self, message: str) -> str:
         # Translate a string using the QGIS translation framework
@@ -353,6 +353,12 @@ class LAS2ENVImet:
         try:
             layer = self.load_point_cloud_file(file_path)
             self.dlg.mMapLayerComboBox.setLayer(layer)
+        except ImportError as e:
+            self.iface.messageBar().pushMessage(
+                self.tr("Missing Dependency"),
+                self.tr(str(e)),
+                level = Qgis.Critical, duration = 10
+            )
         except Exception as e:
             self.iface.messageBar().pushMessage(
                 self.tr("Error"),
@@ -377,6 +383,13 @@ class LAS2ENVImet:
             try:
                 points, _ = load_point_cloud(layer.source())
                 self.model.load_points(points)
+            except ImportError as e:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Missing Dependency"),
+                    self.tr(str(e)),
+                    level = Qgis.Critical, duration = 10
+                )
+                return
             except Exception as e:
                 self.iface.messageBar().pushMessage(
                     self.tr("Error"),
@@ -418,6 +431,7 @@ class LAS2ENVImet:
             return
 
         try:
+            laspy = _ensure_laspy()
             las = laspy.read(source_path)
             points = np.vstack((las.x, las.y, las.z)).transpose()
 
@@ -481,13 +495,21 @@ class LAS2ENVImet:
                 level=Qgis.Success,
                 duration=5
             )
-
+        except ImportError as e:
+            self.iface.messageBar().pushMessage(
+                self.tr("Missing Dependency"),
+                self.tr(str(e)),
+                level=Qgis.Critical,
+                duration=10
+            )
+            return
         except Exception as e:
             self.iface.messageBar().pushMessage(
                 self.tr("Error"),
                 self.tr("ROI processing failed: {}").format(str(e)),
                 level=Qgis.Critical
             )
+            return
 
     def _points_in_polygon(self, points: np.ndarray, polygon_geom) -> np.ndarray:
         # Return a boolean mask indicating which points lie inside the given polygon
@@ -500,6 +522,14 @@ class LAS2ENVImet:
             path = Path(poly_xy)
             return path.contains_points(points_xy)
         except ImportError:
+            if not self._matplotlib_warning_shown:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Peformance Hint"),
+                    self.tr("For faster point-in-polygon tests, consider installing 'matplotlib' (pip install matplotlib). Using fallback method."),
+                    level = Qgis.Info,
+                    duration = 7
+                )
+                self._matplotlib_warning_shown = True
             # fallback
             x, y = points_xy[:, 0], points_xy[:, 1]
             n = len(poly_xy)
@@ -534,6 +564,13 @@ class LAS2ENVImet:
             try:
                 points, las = load_point_cloud(layer.source())
                 self.model.load_points(points, las)
+            except ImportError as e:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Missing Dependency"),
+                    self.tr(str(e)),
+                    level = Qgis.Critical, duration = 10
+                )
+                return
             except Exception as e:
                 self.iface.messageBar().pushMessage(
                     self.tr("Error"),
@@ -613,6 +650,13 @@ class LAS2ENVImet:
             try:
                 points, _ = load_point_cloud(layer.source())
                 self.model.load_points(points)
+            except ImportError as e:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Missing Dependency"),
+                    self.tr(str(e)),
+                    level = Qgis.Critical, duration = 10
+                )
+                return
             except Exception as e:
                 self.iface.messageBar().pushMessage(
                     self.tr("Error"),
@@ -683,6 +727,13 @@ class LAS2ENVImet:
             try:
                 points, _ = load_point_cloud(layer.source())
                 self.model.load_points(points)
+            except ImportError as e:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Missing Dependency"),
+                    self.tr(str(e)),
+                    level = Qgis.Critical, duration = 10
+                )
+                return
             except Exception as e:
                 self.iface.messageBar().pushMessage(
                     self.tr("Error"),
@@ -790,6 +841,13 @@ class LAS2ENVImet:
             try:
                 points, las = load_point_cloud(layer.source())
                 self.model.load_points(points, las)
+            except ImportError as e:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Missing Dependency"),
+                    self.tr(str(e)),
+                    level = Qgis.Critical, duration = 10
+                )
+                return
             except Exception as e:
                 self.iface.messageBar().pushMessage(
                     self.tr("Error"),

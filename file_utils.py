@@ -1,10 +1,11 @@
 # file_utils.py
 # Utility functions for file operations, point cloud loading, and ENVI‑met export.
 
+from __future__ import annotations
+
 import os
 import re
 import tempfile
-import laspy
 import numpy as np
 
 from datetime import datetime
@@ -13,6 +14,14 @@ from .lad_utils import apply_lad_threshold
 
 
 # Point cloud I/O Section
+
+def _ensure_laspy():
+    # Import laspy module. Raise an ImportError if not available with ionstallation instructions
+    try:
+        import laspy
+        return laspy
+    except ImportError:
+        raise ImportError("The 'laspy' Python package is required to read and write LAS/LAZ files. Please install it in the QGIS Python Terminal using: pip install laspy")
 
 def load_point_cloud(file_path: str) -> Tuple[np.ndarray, laspy.LasData]:
     # Load a LAS/LAZ file and return the points as a numpy array and the laspy object
@@ -24,6 +33,8 @@ def load_point_cloud(file_path: str) -> Tuple[np.ndarray, laspy.LasData]:
     file_ext = os.path.splitext(file_path)[1].lower()
     if file_ext not in ('.las', '.laz'):
         raise ValueError(f"Unsupported file format: {file_ext}. Only .las and .laz files are supported.")
+    
+    laspy = _ensure_laspy()
 
     try:
         las = laspy.read(file_path)
@@ -39,6 +50,7 @@ def load_point_cloud(file_path: str) -> Tuple[np.ndarray, laspy.LasData]:
 
 def save_filtered_las(original_las: laspy.LasData, point_mask: np.ndarray, output_path: Optional[str] = None) -> str:
     # Create a new LAS file containing only the points selected by point_mask (ROI)
+    laspy = _ensure_laspy()
     if output_path is None:
         output_path = tempfile.mktemp(suffix=".las")
 

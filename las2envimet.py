@@ -525,7 +525,7 @@ class LAS2ENVImet:
             if not self._matplotlib_warning_shown:
                 self.iface.messageBar().pushMessage(
                     self.tr("Peformance Hint"),
-                    self.tr("For faster point-in-polygon tests, consider installing 'matplotlib' (pip install matplotlib). Using fallback method."),
+                    self.tr("For faster point-in-polygon tests, consider installing 'matplotlib' (OSGeo4W shell: pip install matplotlib). Using fallback method."),
                     level = Qgis.Info,
                     duration = 7
                 )

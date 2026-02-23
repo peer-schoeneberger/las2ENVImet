@@ -21,7 +21,7 @@ def _ensure_laspy():
         import laspy
         return laspy
     except ImportError:
-        raise ImportError("The 'laspy' Python package is required to read and write LAS/LAZ files. Please install it in the QGIS Python Terminal using: pip install laspy")
+        raise ImportError("The 'laspy' Python package is required to read and write LAS/LAZ files. Please install it in the QGIS OSGeo4W shell using: pip install laspy[lazrs] ")
 
 def load_point_cloud(file_path: str) -> Tuple[np.ndarray, laspy.LasData]:
     # Load a LAS/LAZ file and return the points as a numpy array and the laspy object

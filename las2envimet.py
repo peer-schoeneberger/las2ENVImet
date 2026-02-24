@@ -996,6 +996,9 @@ class LAS2ENVImet:
                 level=Qgis.Warning
             )
             return
+        
+        self.dlg.showMinimized()
+        
         self.point_tool = PointTool(self.iface.mapCanvas(), self.on_voxel_picked)
         self.iface.mapCanvas().setMapTool(self.point_tool)
         self.iface.messageBar().pushMessage(
@@ -1007,6 +1010,10 @@ class LAS2ENVImet:
     def on_voxel_picked(self, point: QgsPointXY):
         # Store the picked voxel coordinates for later addition
         self.iface.mapCanvas().unsetMapTool(self.point_tool)
+
+        self.dlg.showNormal()
+        self.dlg.raise_()
+
         self.last_picked_point = (point.x(), point.y(), self.dlg.spinZLevel.value())
         self.iface.messageBar().pushMessage(
             self.tr("Info"),

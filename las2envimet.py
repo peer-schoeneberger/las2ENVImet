@@ -23,6 +23,7 @@ from .map_tools import PointTool
 from . import layer_utils as lutils
 from .roi_tool import ROIPolygonTool
 from .lad_utils import apply_stem_only_option
+from .installer_utils import install_packages_sync, ensure_pip
 
 
 class LAS2ENVImet:
@@ -41,6 +42,7 @@ class LAS2ENVImet:
         self.lad_calculated = False
         self.last_picked_point: Optional[tuple] = None
         self._matplotlib_warning_shown = False
+        self.original_layer_id = None
 
     def tr(self, message: str) -> str:
         # Translate a string using the QGIS translation framework
@@ -72,15 +74,108 @@ class LAS2ENVImet:
             self.iface.removePluginMenu(self.menu, action)
             self.iface.removeToolBarIcon(action)
 
+    def _get_filewidget_path(self, widget):
+        # Maximize compatibility through different QGIS Versions
+        if hasattr(widget, 'filePath'):
+            return widget.filePath()
+        elif hasattr(widget, 'documentPath'):
+            return widget.documentPath()
+        elif hasattr(widget, 'lineEdit'):
+            return widget.lineEdit().text()
+        else:
+            return ''
+
+    def _set_filewidget_path(self, widget, path):
+        if hasattr(widget, 'setFilePath'):
+            widget.setFilePath(path)
+        elif hasattr(widget, 'setDocumentPath'):
+            widget.setDocumentPath(path)
+        elif hasattr(widget, 'lineEdit'):
+            widget.lineEdit().setText(path)
+
     
     # Main run method and UI setup
     def run(self):
-        # Show the plugin dialog when the user activates the plugin
+        # Check if laspy is available. If not offer to install it.
+        try:
+            import laspy
+        except ImportError:
+            reply = QMessageBox.question(
+                None,
+                self.tr("Missing Python Packages"),
+                self.tr(
+                    "The plugin requires 'laspy[lazrs]' and optionally 'matplotlib'.\n"
+                    "Do you want to install them now?\n\n"
+                    "This will run:\n"
+                    "  pip install laspy[lazrs] matplotlib --user\n\n"
+                    "QGIS will be unresponsive for a short time."
+                ),
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+            if reply == QMessageBox.Yes:
+                if not ensure_pip():
+                    QMessageBox.critical(
+                        None,
+                        self.tr("Error"),
+                        self.tr("pip is not available in the QGIS Python environment. Cannot install.")
+                    )
+                    return
+                QMessageBox.information(
+                    None,
+                    self.tr("Installation started"),
+                    self.tr("Please wait while packages are installed. This may take a minute.")
+                )
+                success, msg = install_packages_sync(["laspy[lazrs]", "matplotlib"], upgrade=False, user=True)
+                if success:
+                    QMessageBox.information(
+                        None,
+                        self.tr("Installation successful"),
+                        self.tr("Packages installed. Please restart QGIS to load the plugin correctly.")
+                    )
+                else:
+                    QMessageBox.critical(
+                        None,
+                        self.tr("Installation failed"),
+                        self.tr("Could not install packages.\n\nDetails:\n{}").format(msg)
+                    )
+            else:
+                QMessageBox.warning(
+                    None,
+                    self.tr("Plugin cannot start"),
+                    self.tr("Please install the required packages manually:\n"
+                            "pip install laspy[lazrs] matplotlib --user")
+                )
+            return  # User needs to restart
+       
         try:
             if self.first_start:
                 self.dlg = LAS2ENVImetDialog()
                 self.setup_ui()
                 self.first_start = False
+
+            current_path = self._get_filewidget_path(self.dlg.fileSource)
+            if current_path and not os.path.exists(current_path):
+                self._set_filewidget_path(self.dlg.fileSource, "")
+                self.iface.messageBar().pushMessage(
+                    self.tr("Info"),
+                    self.tr("Previously selected file not found. Please select a new point cloud."),
+                    level=Qgis.Info,
+                    duration=5
+                )
+            current_layer = self.dlg.mMapLayerComboBox.currentLayer()
+            layer_valid = current_layer is not None and current_layer.id() in QgsProject.instance().mapLayers()
+            if not layer_valid:
+                self.dlg.mMapLayerComboBox.setLayer(None)
+                if current_path:
+                    self._set_filewidget_path(self.dlg.fileSource, "")
+                    self.iface.messageBar().pushMessage(
+                        self.tr("Info"),
+                        self.tr("Previously selected point cloud layer no longer exists. Please select the LAS/LAZ file again."),
+                        level=Qgis.Info,
+                        duration=5
+                    )
+
             self.dlg.show()
             self.dlg.exec_()
         except Exception as e:
@@ -151,12 +246,14 @@ class LAS2ENVImet:
         self.dlg.linePlantID.textChanged.connect(self.on_plant_id_changed)
         self.dlg.linePlantID.setInputMask(">XXXXXX")  # max 6 characters, letters/digits
 
+        # Export button
+        self.dlg.btnExport.setEnabled(False)
+
         # Output file widget
         file_out_widget = self.dlg.fileOutput.fileWidget()
         if file_out_widget:
             file_out_widget.setStorageMode(QgsFileWidget.SaveFile)
             file_out_widget.setFilter(self.tr("Text files (*.txt)"))
-        self.dlg.fileOutput.setEnabled(False)
 
         # Database file widget
         db_widget = self.dlg.fileDatabase.fileWidget()
@@ -164,7 +261,7 @@ class LAS2ENVImet:
             db_widget.setStorageMode(QgsFileWidget.GetFile)
             db_widget.setFilter(self.tr("ENVI-met Database (projectdatabase.edb)"))
         default_db_path = r"D:\enviprojects\userdatabase\projectdatabase.edb"
-        self.dlg.fileDatabase.setDocumentPath(default_db_path)
+        self._set_filewidget_path(self.dlg.fileDatabase, default_db_path)
 
         # Initial button states
         self.dlg.btnExport.setEnabled(False)
@@ -196,6 +293,12 @@ class LAS2ENVImet:
         # Initialise physiological parameters
         self.update_physiological_params()
         self.toggle_manual_physiology()
+
+        default_plant_id = "ID1234"
+        self.dlg.linePlantID.setText(default_plant_id)
+        docs = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
+        default_path = os.path.join(docs, f"{default_plant_id}.txt")
+        self._set_filewidget_path(self.dlg.fileOutput, default_path)
 
     
     # UI helper methods (validation, updates)
@@ -333,7 +436,7 @@ class LAS2ENVImet:
         if len(clean_id) == 6:
             default_dir = os.path.expanduser("~")
             default_path = os.path.join(default_dir, f"{clean_id}.txt")
-            self.dlg.fileOutput.setDocumentPath(default_path)
+            self._set_filewidget_path(self.dlg.fileOutput, default_path)
 
     
     # Point cloud loading and layer handling
@@ -368,35 +471,71 @@ class LAS2ENVImet:
 
 
     # ROI selection
+    def _find_layer_by_source(self, file_path: str):
+        for layer in QgsProject.instance().mapLayers().values():
+            if layer.type() == QgsMapLayerType.PointCloudLayer and layer.source() == file_path:
+                return layer
+        return None
+
     def on_select_roi(self):
         # Activate the polygon tool to draw a region of interest
-        layer = self.dlg.mMapLayerComboBox.currentLayer()
-        if not layer or layer.type() != QgsMapLayerType.PointCloudLayer:
+        source_path = self._get_filewidget_path(self.dlg.fileSource)
+        if not source_path or not os.path.exists(source_path):
             self.iface.messageBar().pushMessage(
                 self.tr("Error"),
-                self.tr("Please select a point cloud layer!"),
+                self.tr("Please load a point cloud file first (use file selector)"),
                 level=Qgis.Warning
             )
             return
-
-        if self.model.points is None:
+        
+        original_layer = self._find_layer_by_source(source_path)
+        if original_layer:
+            self.original_layer_id = original_layer.id()
+        else:
             try:
-                points, _ = load_point_cloud(layer.source())
-                self.model.load_points(points)
-            except ImportError as e:
-                self.iface.messageBar().pushMessage(
-                    self.tr("Missing Dependency"),
-                    self.tr(str(e)),
-                    level = Qgis.Critical, duration = 10
-                )
-                return
+                original_layer = self.load_point_cloud_file(source_path)
+                self.original_layer_id = original_layer.id()
+                self.dlg.mMapLayerComboBox.setLayer(original_layer)
             except Exception as e:
                 self.iface.messageBar().pushMessage(
                     self.tr("Error"),
-                    self.tr("Could not load LAS file: {}").format(str(e)),
+                    self.tr("Could not load LAS/LAZ file: {}").format(str(e)),
                     level=Qgis.Critical
                 )
                 return
+        
+        if self.original_layer_id:
+            root = QgsProject.instance().layerTreeRoot()
+            tree_layer = root.findLayer(self.original_layer_id)
+            if tree_layer and not tree_layer.isVisible():
+                tree_layer.setItemVisibilityChecked(True)
+
+        to_remove = []
+        for lyr in QgsProject.instance().mapLayers().values():
+            if lyr.name().startswith("ROI Points") or "roi_" in lyr.source():
+                to_remove.append(lyr.id())
+        if to_remove:
+            QgsProject.instance().removeMapLayers(to_remove)
+            self.dlg.mMapLayerComboBox.setLayer(None)
+
+        
+        try:
+            points, _ = load_point_cloud(source_path)
+            self.model.load_points(points)
+        except ImportError as e:
+            self.iface.messageBar().pushMessage(
+                self.tr("Missing Dependency"),
+                self.tr(str(e)),
+                level = Qgis.Critical, duration = 10
+            )
+            return
+        except Exception as e:
+            self.iface.messageBar().pushMessage(
+                self.tr("Error"),
+                self.tr("Could not load LAS file: {}").format(str(e)),
+                level=Qgis.Critical
+            )
+            return
 
         self.dlg.showMinimized()
         self.roi_tool = ROIPolygonTool(self.iface.mapCanvas(), self.on_roi_drawn)
@@ -412,17 +551,8 @@ class LAS2ENVImet:
         self.dlg.showNormal()
         self.dlg.raise_()
 
-        layer = self.dlg.mMapLayerComboBox.currentLayer()
-        if not layer or layer.type() != QgsMapLayerType.PointCloudLayer:
-            self.iface.messageBar().pushMessage(
-                self.tr("Error"),
-                self.tr("No point cloud layer selected."),
-                level=Qgis.Critical
-            )
-            return
-
-        source_path = layer.source()
-        if not os.path.exists(source_path):
+        source_path = self._get_filewidget_path(self.dlg.fileSource)
+        if not source_path or not os.path.exists(source_path):
             self.iface.messageBar().pushMessage(
                 self.tr("Error"),
                 self.tr("Source file not found: {}").format(source_path),
@@ -458,9 +588,13 @@ class LAS2ENVImet:
                 writer.write_points(filtered_points)
 
             # Remove old ROI layers
+            self.dlg.mMapLayerComboBox.setLayer(None)
+            to_remove = []
             for lyr in QgsProject.instance().mapLayers().values():
                 if lyr.name().startswith("ROI Points") or "roi_" in lyr.source():
-                    QgsProject.instance().removeMapLayer(lyr.id())
+                    to_remove.append(lyr.id())
+            if to_remove:
+                QgsProject.instance().removeMapLayers(to_remove)
 
             # Load new ROI layer
             roi_layer = QgsPointCloudLayer(temp_path, "ROI Points", "pdal")
@@ -468,11 +602,11 @@ class LAS2ENVImet:
                 raise Exception("Failed to load filtered point cloud.")
             QgsProject.instance().addMapLayer(roi_layer)
 
-            # Hide the original layer
-            root = QgsProject.instance().layerTreeRoot()
-            layer_tree_layer = root.findLayer(layer.id())
-            if layer_tree_layer:
-                layer_tree_layer.setItemVisibilityChecked(False)
+            if hasattr(self, 'original_layer_id') and self.original_layer_id:
+                root = QgsProject.instance().layerTreeRoot()
+                original_tree_layer = root.findLayer(self.original_layer_id)
+                if original_tree_layer:
+                    original_tree_layer.setItemVisibilityChecked(False)
 
             self.dlg.mMapLayerComboBox.setLayer(roi_layer)
             self.model.points = points[mask]
@@ -811,6 +945,8 @@ class LAS2ENVImet:
         self.dlg.spinLADThreshold.setEnabled(False)
         self.dlg.checkClearGround.setEnabled(False)
         self.dlg.btnResetTransform.setEnabled(False)
+        self.dlg.btnExport.setEnabled(False)
+        self.lad_calculated = False
 
         self.iface.messageBar().pushMessage(
             self.tr("Info"),
@@ -912,6 +1048,9 @@ class LAS2ENVImet:
             self.dlg.btnRemoveRefVoxel.setEnabled(True)
             self.dlg.btnCalculateLAD.setEnabled(True)
 
+            self.lad_calculated = False
+            self.dlg.btnExport.setEnabled(False)
+
             self.show_z_slice(self.dlg.spinZLevel.value())
 
             self.iface.messageBar().pushMessage(
@@ -967,6 +1106,8 @@ class LAS2ENVImet:
         self.dlg.checkTrunkEnhance.setEnabled(True)
         self.dlg.spinLADThreshold.setEnabled(True)
         self.dlg.checkClearGround.setEnabled(True)
+        self.dlg.btnExport.setEnabled(True)
+        self.dlg.fileOutput.setEnabled(True)
 
         self.dlg.spinTrunkHeight.setEnabled(self.dlg.checkTrunkEnhance.isChecked())
         self.dlg.spinTrunkLAD.setEnabled(self.dlg.checkTrunkEnhance.isChecked())
@@ -1222,14 +1363,14 @@ class LAS2ENVImet:
         # Export the tree as an ENVI‑met TXT file and optionally update the database
         plant_id = self.dlg.linePlantID.text().replace("_", "").strip()
         if len(plant_id) != 6:
-            QMessageBox.warning(
+            plant_id = "ID1234"
+            QMessageBox.information(
                 self.dlg,
                 self.tr("Export"),
-                self.tr("Plant ID must be exactly 6 characters long!")
+                self.tr("No valid Plant ID entered. Using default ID: {}").format(plant_id)
             )
-            return
 
-        output_path = self.dlg.fileOutput.documentPath()
+        output_path = self._get_filewidget_path(self.dlg.fileOutput)
         if not output_path:
             QMessageBox.warning(
                 self.dlg,
@@ -1238,7 +1379,7 @@ class LAS2ENVImet:
             )
             return
 
-        db_path = self.dlg.fileDatabase.documentPath()
+        db_path = self._get_filewidget_path(self.dlg.fileDatabase)
         description = self.dlg.lineDescription.text().strip() or "Generated from LiDAR"
         albedo = self.dlg.spinAlbedo.value()
         transmittance = self.dlg.spinTransmittance.value()
@@ -1273,12 +1414,7 @@ class LAS2ENVImet:
             return
         clean_id = text.replace("_", "").strip()
         if len(clean_id) == 6:
-            self.dlg.fileOutput.setEnabled(True)
             docs = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
             default_path = os.path.join(docs, f"{clean_id}.txt")
-            self.dlg.fileOutput.setDocumentPath(default_path)
-            if self.lad_calculated:
-                self.dlg.btnExport.setEnabled(True)
-        else:
-            self.dlg.fileOutput.setEnabled(False)
-            self.dlg.btnExport.setEnabled(False)
+            self._set_filewidget_path(self.dlg.fileOutput, default_path)
+        

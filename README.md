@@ -92,7 +92,9 @@ git clone https://github.com/peer-schoeneberger/las2ENVImet.git
 Plugins → Manage and Install Plugins…
 
 ### From the QGIS plugin repository
-_Available soon_
+- Option 1: Open the Plugin Manager: Go to Plugins > Manage and Install Plugins > Search for "LAS to ENVI-met Tree Converter" in the menu bar and click "Install Plugin".
+- Option 2: [Download it from the QGIS Website](https://plugins.qgis.org/plugins/las2ENVImet/) and install it as described in steps 2 and 3 above.
+
 
 
 ## Dependencies

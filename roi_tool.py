@@ -4,10 +4,17 @@ from qgis.core import QgsWkbTypes, QgsGeometry, QgsPointXY
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
 
+try:
+    # PyQt5
+    LeftButton = Qt.LeftButton
+    RightButton = Qt.RightButton
+except AttributeError:
+    # PyQt6
+    LeftButton = Qt.MouseButton.LeftButton
+    RightButton = Qt.MouseButton.RightButton
 
 class ROIPolygonTool(QgsMapTool):
     # Map tool for drawing a polygon ROI. Left click adds vertices, right click closes the polygon   
-
     def __init__(self, canvas, callback):
         super().__init__(canvas)
         self.canvas = canvas
@@ -23,18 +30,28 @@ class ROIPolygonTool(QgsMapTool):
 
     def canvasPressEvent(self, event):
         # Handle mouse press events
-        if event.button() == Qt.LeftButton:
+        if event.button() == LeftButton:
             point = self.toMapCoordinates(event.pos())
             self.points.append(point)
             self.rubber_band.addPoint(point)
             self.is_drawing = True
 
-        elif event.button() == Qt.RightButton and self.is_drawing:
+        elif event.button() == RightButton and self.is_drawing:
             if len(self.points) < 3:
                 self.reset() # Not enough points – reset and ignore
                 return
+            
+            p_start = self.points[0]
+            p_end = self.points[-1]
+            if abs(p_start.x() - p_end.x()) > 0.001 or abs(p_start.y() - p_end.y()) > 0.001:
+                closed_points = self.points + [self.points[0]]
+            else:
+                closed_points = self.points
 
-            polygon = QgsGeometry.fromPolygonXY([self.points])
+            polygon = QgsGeometry.fromPolygonXY([closed_points])
+            if polygon.isNull() or not polygon.isGeosValid():
+                self.reset()
+                return
             self.rubber_band.reset()
             self.callback(polygon)
             self.reset()

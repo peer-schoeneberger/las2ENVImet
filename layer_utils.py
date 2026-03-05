@@ -9,7 +9,6 @@ from qgis.core import (
     QgsRendererRange, QgsSymbol, QgsPointXY
 )
 from qgis.PyQt.QtGui import QColor
-from qgis.PyQt.QtCore import QMetaType
 from typing import Optional, Tuple, List, Union
 
 
@@ -17,6 +16,18 @@ def create_memory_layer(crs_authid: str, name: str, geometry_type: str = "Point"
     layer = QgsVectorLayer(f"{geometry_type}?crs={crs_authid}", name, "memory")
     return layer
 
+def create_qgs_field(name, typ):
+    try:
+        return QgsField(name, typ)
+    except TypeError:
+        from qgis.PyQt.QtCore import QVariant
+        mapping = {
+            int: QVariant.Int,
+            float: QVariant.Double,
+            str: QVariant.String,
+            bool: QVariant.Bool
+        }
+        return QgsField(name, mapping.get(typ, QVariant.String))
 
 def add_points_to_layer(layer: QgsVectorLayer, points: np.ndarray, max_points: int = 30000) -> QgsVectorLayer:
     # If the number of points exceeds max_points, a random subset is used
@@ -40,8 +51,8 @@ def add_voxel_polygons(layer: QgsVectorLayer, corners: np.ndarray, counts: np.nd
     # Add square polygons representing voxels at a given Z-level. The polygons have attributes 'points' (number of LiDAR points) and 'LAD' if provided and bigger than min_lad
     provider = layer.dataProvider()
     provider.addAttributes([
-        QgsField("points", QMetaType.Type.Int),
-        QgsField("LAD", QMetaType.Type.Double)
+        create_qgs_field("points", int),
+        create_qgs_field("LAD", float)
     ])
     layer.updateFields()
 

@@ -2,11 +2,11 @@
 import numpy as np
 
 from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, QgsField, QgsPointXY
-from qgis.PyQt.QtCore import QVariant
 
 from .voxel_utils import create_voxel_grid_centered
 from .geometry_utils import analyze_tree_dimensions, scale_point_cloud_to_dimensions, rotate_point_cloud
 from .lad_utils import calculate_lad_values_multiple_references
+from .layer_utils import create_qgs_field
 
 
 class TreeModel:
@@ -202,7 +202,7 @@ class TreeModel:
             return None
         vl = QgsVectorLayer(f"Point?crs={crs_authid}", layer_name, "memory")
         provider = vl.dataProvider()
-        provider.addAttributes([QgsField("orig_index", QVariant.Int)])
+        provider.addAttributes([create_qgs_field("orig_index", int)])
         vl.updateFields()
         features = []
         for i, p in enumerate(self.points):

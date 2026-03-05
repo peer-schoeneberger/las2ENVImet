@@ -9,7 +9,7 @@ import numpy as np
 from qgis.core import (QgsProject, Qgis, QgsMapLayerProxyModel, QgsMapLayerType, QgsPointCloudLayer, QgsPointXY)
 from qgis.gui import QgsMessageBar, QgsFileWidget
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
-from qgis.PyQt.QtCore import Qt, QStandardPaths, QCoreApplication
+from qgis.PyQt.QtCore import Qt, QStandardPaths, QCoreApplication, QT_VERSION_STR
 from qgis.PyQt.QtGui import QColor, QIcon
 
 from typing import Optional, List, Dict, Any
@@ -43,6 +43,7 @@ class LAS2ENVImet:
         self.last_picked_point: Optional[tuple] = None
         self._matplotlib_warning_shown = False
         self.original_layer_id = None
+        self.is_qt6 = QT_VERSION_STR.startswith('6')
 
     def tr(self, message: str) -> str:
         # Translate a string using the QGIS translation framework
@@ -92,6 +93,24 @@ class LAS2ENVImet:
             widget.setDocumentPath(path)
         elif hasattr(widget, 'lineEdit'):
             widget.lineEdit().setText(path)
+    
+    def _get_documents_folder(self):
+        try:
+            # PyQt5
+            location = QStandardPaths.DocumentsLocation
+        except AttributeError:
+            # PyQt6
+            location = QStandardPaths.StandardLocation.DocumentsLocation
+        return QStandardPaths.writableLocation(location)
+    
+    def _get_temp_location(self):
+        try:
+            # PyQt5
+            location = QStandardPaths.TempLocation
+        except AttributeError:
+            # PyQt6
+            location = QStandardPaths.StandardLocation.TempLocation
+        return QStandardPaths.writableLocation(location)
 
     
     # Main run method and UI setup
@@ -177,7 +196,7 @@ class LAS2ENVImet:
                     )
 
             self.dlg.show()
-            self.dlg.exec_()
+            self.dlg.exec()
         except Exception as e:
             self.iface.messageBar().pushMessage(
                 self.tr("Critical Error"),
@@ -191,7 +210,7 @@ class LAS2ENVImet:
             return
 
         # Layer selection
-        self.dlg.mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.PointCloudLayer)
+        self.dlg.mMapLayerComboBox.setFilters(QgsMapLayerProxyModel.All)
 
         # File source widget
         self.dlg.fileSource.setStorageMode(QgsFileWidget.GetFile)
@@ -296,7 +315,7 @@ class LAS2ENVImet:
 
         default_plant_id = "ID1234"
         self.dlg.linePlantID.setText(default_plant_id)
-        docs = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
+        docs = self._get_documents_folder()
         default_path = os.path.join(docs, f"{default_plant_id}.txt")
         self._set_filewidget_path(self.dlg.fileOutput, default_path)
 
@@ -548,6 +567,18 @@ class LAS2ENVImet:
 
     def on_roi_drawn(self, polygon):
         # Process the drawn polygon: filter points, create new layer, update model
+
+        if polygon is None:
+            return
+        
+        if polygon.isEmpty() or not polygon.isGeosValid():
+            self.iface.messageBar().pushMessage(
+                self.tr("Error"),
+                self.tr("Drawn polygon is invalid."),
+                level=Qgis.Critical
+            )
+            return
+        
         self.dlg.showNormal()
         self.dlg.raise_()
 
@@ -566,56 +597,74 @@ class LAS2ENVImet:
             points = np.vstack((las.x, las.y, las.z)).transpose()
 
             mask = self._points_in_polygon(points, polygon)
-            if mask is None or np.sum(mask) == 0:
+            if mask is None:
+                self.iface.messageBar().pushMessage(self.tr("Error"), "Couldn't compute mask.", level=Qgis.Critical)
+                return
+
+            mask = np.array(mask).flatten().astype(bool)
+
+            if not np.any(mask):
                 self.iface.messageBar().pushMessage(
                     self.tr("Error"),
                     self.tr("No points inside the drawn polygon."),
                     level=Qgis.Critical
                 )
                 return
+            
+            filtered_points = points[mask]
+            
+            if self.is_qt6:
+                # Fallback
+                crs = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
+                vl = lutils.create_memory_layer(crs, "ROI Points", "Point")
+                lutils.add_points_to_layer(vl, filtered_points, max_points=200000)
+                QgsProject.instance().addMapLayer(vl)
+                roi_layer = vl
+            else:
+                import tempfile
+                temp_base = self._get_temp_location()
+                roi_temp_dir = os.path.join(temp_base, "las2envimet_roi")
+                os.makedirs(roi_temp_dir, exist_ok=True)
 
-            temp_dir = tempfile.gettempdir()
-            base_name = os.path.splitext(os.path.basename(source_path))[0]
-            timestamp = int(time.time() * 1000)
-            temp_path = os.path.join(temp_dir, f"roi_{base_name}_{timestamp}.las")
+                with tempfile.NamedTemporaryFile(suffix=".las", prefix="roi_", delete=False, dir=roi_temp_dir) as tmp_file:
+                    temp_path = tmp_file.name
 
-            header = laspy.LasHeader(
-                point_format=las.header.point_format,
-                version=las.header.version
-            )
-            filtered_points = las.points[mask]
-            with laspy.open(temp_path, mode='w', header=header) as writer:
-                writer.write_points(filtered_points)
+                header = laspy.LasHeader(point_format=las.header.point_format, version=las.header.version)
+                
+                new_las = laspy.LasData(header)
+                new_las.x = las.x[mask]
+                new_las.y = las.y[mask]
+                new_las.z = las.z[mask]
 
-            # Remove old ROI layers
-            self.dlg.mMapLayerComboBox.setLayer(None)
-            to_remove = []
-            for lyr in QgsProject.instance().mapLayers().values():
-                if lyr.name().startswith("ROI Points") or "roi_" in lyr.source():
-                    to_remove.append(lyr.id())
-            if to_remove:
-                QgsProject.instance().removeMapLayers(to_remove)
+                if hasattr(las, 'intensity'):
+                    new_las.intensity = las.intensity[mask]
+                
+                new_las.write(temp_path)
 
-            # Load new ROI layer
-            roi_layer = QgsPointCloudLayer(temp_path, "ROI Points", "pdal")
-            if not roi_layer.isValid():
-                raise Exception("Failed to load filtered point cloud.")
-            QgsProject.instance().addMapLayer(roi_layer)
+                to_remove = [lyr.id() for lyr in QgsProject.instance().mapLayers().values() if lyr.name() == "ROI Points"]
+                if to_remove:
+                    QgsProject.instance().removeMapLayers(to_remove)
+
+                roi_layer = QgsPointCloudLayer(temp_path, "ROI Points", "pdal")
+                if not roi_layer.isValid():
+                    raise Exception("Failed to load filtered point cloud layer.")
+                QgsProject.instance().addMapLayer(roi_layer)
+
+            self.model.points = filtered_points
+            self.model.stem_point = None
+            self.model.current_dims = None
+            self.model.transformed_points = None
+            
+            self.dlg.mMapLayerComboBox.setLayer(roi_layer)
+            self.model.voxel_corners = None
+            self.model.lad_values = None
+            self.model.ref_voxels = []
 
             if hasattr(self, 'original_layer_id') and self.original_layer_id:
                 root = QgsProject.instance().layerTreeRoot()
                 original_tree_layer = root.findLayer(self.original_layer_id)
                 if original_tree_layer:
                     original_tree_layer.setItemVisibilityChecked(False)
-
-            self.dlg.mMapLayerComboBox.setLayer(roi_layer)
-            self.model.points = points[mask]
-            self.model.stem_point = None
-            self.model.current_dims = None
-            self.model.transformed_points = None
-            self.model.voxel_corners = None
-            self.model.lad_values = None
-            self.model.ref_voxels = []
 
             self.dlg.btnSelectStem.setEnabled(True)
             self.dlg.btnCreateVoxels.setEnabled(False)
@@ -629,53 +678,61 @@ class LAS2ENVImet:
                 level=Qgis.Success,
                 duration=5
             )
-        except ImportError as e:
-            self.iface.messageBar().pushMessage(
-                self.tr("Missing Dependency"),
-                self.tr(str(e)),
-                level=Qgis.Critical,
-                duration=10
-            )
-            return
         except Exception as e:
             self.iface.messageBar().pushMessage(
                 self.tr("Error"),
                 self.tr("ROI processing failed: {}").format(str(e)),
                 level=Qgis.Critical
             )
-            return
 
-    def _points_in_polygon(self, points: np.ndarray, polygon_geom) -> np.ndarray:
+    def _points_in_polygon(self, points: np.ndarray, polygon):
         # Return a boolean mask indicating which points lie inside the given polygon
-        poly = polygon_geom.asPolygon()[0]
-        poly_xy = [(p.x(), p.y()) for p in poly]
+        if points is None or points.size == 0:
+            return None
+
         points_xy = points[:, :2]
 
         try:
             from matplotlib.path import Path
-            path = Path(poly_xy)
-            return path.contains_points(points_xy)
-        except ImportError:
-            if not self._matplotlib_warning_shown:
-                self.iface.messageBar().pushMessage(
-                    self.tr("Peformance Hint"),
-                    self.tr("For faster point-in-polygon tests, consider installing 'matplotlib' (OSGeo4W shell: pip install matplotlib). Using fallback method."),
-                    level = Qgis.Info,
-                    duration = 7
-                )
-                self._matplotlib_warning_shown = True
-            # fallback
-            x, y = points_xy[:, 0], points_xy[:, 1]
-            n = len(poly_xy)
-            inside = np.zeros(len(points), dtype=bool)
-            for i in range(n):
-                x1, y1 = poly_xy[i]
-                x2, y2 = poly_xy[(i + 1) % n]
-                cond = ((y1 > y) != (y2 > y))
-                xinters = (x2 - x1) * (y - y1) / (y2 - y1) + x1
-                inside[cond & (x < xinters)] = ~inside[cond & (x < xinters)]
-            return inside
+            poly_points = []
+            for ring in polygon.asPolygon():
+                for pt in ring:
+                    poly_points.append((float(pt.x()), float(pt.y())))
+            
+            if not poly_points:
+                return None
+                
+            path = Path(poly_points)
+            mask = path.contains_points(points_xy)
+            return np.array(mask).astype(bool)
 
+        except ImportError:
+            # fallback
+            poly_rings = polygon.asPolygon()
+            if not poly_rings:
+                return None
+            
+            exterior_ring = poly_rings[0]
+            poly_verts = [(float(p.x()), float(p.y())) for p in exterior_ring]
+            num_verts = len(poly_verts)
+
+            py_points = points_xy.tolist()
+            mask = []
+
+            for i in range(len(py_points)):
+                px, py = py_points[i]
+                inside = False
+                p1x, p1y = poly_verts[0]
+                for j in range(num_verts + 1):
+                    p2x, p2y = poly_verts[j % num_verts]
+                    if (py > p1y) != (py > p2y):
+                        if px < (p2x - p1x) * (py - p1y) / (p2y - p1y + 1e-10) + p1x:
+                            inside = not inside
+                    p1x, p1y = p2x, p2y
+                mask.append(inside)
+            
+            return np.array(mask)
+        
     # Trunk point selection
     def on_select_stem(self):
         # Activate point tool to pick the trunk base
@@ -771,16 +828,24 @@ class LAS2ENVImet:
     # Z‑filter preview
     def on_filter_cloud(self):
         # Create a temporary layer showing points between two Z‑percentiles
-        layer = self.dlg.mMapLayerComboBox.currentLayer()
-        if not layer or layer.type() != QgsMapLayerType.PointCloudLayer:
-            self.iface.messageBar().pushMessage(
-                self.tr("Error"),
-                self.tr("Please select a point cloud layer!"),
-                level=Qgis.Warning
-            )
-            return
-
         if self.model.points is None:
+
+            layer = self.dlg.mMapLayerComboBox.currentLayer()
+            if not layer:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Error"),
+                    self.tr("Please select a point cloud layer!"),
+                    level=Qgis.Warning
+                )
+                return
+            if layer.type() != QgsMapLayerType.PointCloudLayer:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Error"),
+                    self.tr("Please select a point cloud layer (.las/.laz) or load points via ROI first."),
+                    level=Qgis.Warning
+                )
+                return
+
             try:
                 points, _ = load_point_cloud(layer.source())
                 self.model.load_points(points)
@@ -798,6 +863,14 @@ class LAS2ENVImet:
                     level=Qgis.Critical
                 )
                 return
+            crs = layer.crs().authid()
+        else: 
+            self.iface.messageBar().pushMessage(
+            self.tr("Info"),
+            self.tr("Using points from model (ROI or previous load)."),
+            level=Qgis.Info
+            )
+            crs = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
 
         # Remove existing filter layers
         for lyr in QgsProject.instance().mapLayers().values():
@@ -820,7 +893,6 @@ class LAS2ENVImet:
             idx = np.random.choice(len(filtered), 50000, replace=False)
             filtered = filtered[idx]
 
-        crs = layer.crs().authid()
         layer_name = f"Filter_{lower_percent:.2f}-{upper_percent:.2f}%"
         vl = lutils.create_memory_layer(crs, layer_name, "Point")
         lutils.add_points_to_layer(vl, filtered)
@@ -840,15 +912,6 @@ class LAS2ENVImet:
     # Scaling and rotation preview
     def on_preview_scaled(self):
         # Show scaled and rotated point cloud
-        layer = self.dlg.mMapLayerComboBox.currentLayer()
-        if not layer or layer.type() != QgsMapLayerType.PointCloudLayer:
-            self.iface.messageBar().pushMessage(
-                self.tr("Error"),
-                self.tr("Please select a point cloud layer!"),
-                level=Qgis.Warning
-            )
-            return
-
         if self.model.current_dims is None:
             self.iface.messageBar().pushMessage(
                 self.tr("Error"),
@@ -856,8 +919,24 @@ class LAS2ENVImet:
                 level=Qgis.Warning
             )
             return
-
+        
         if self.model.points is None:
+            layer = self.dlg.mMapLayerComboBox.currentLayer()
+            if not layer:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Error"),
+                    self.tr("No layer selected!"),
+                    level=Qgis.Warning
+                )
+                return
+            if layer.type() != QgsMapLayerType.PointCloudLayer:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Error"),
+                    self.tr("Please select a point cloud layer (.las/.laz) or load points via ROI first."),
+                            level=Qgis.Warning
+                )
+                return
+
             try:
                 points, _ = load_point_cloud(layer.source())
                 self.model.load_points(points)
@@ -875,6 +954,14 @@ class LAS2ENVImet:
                     level=Qgis.Critical
                 )
                 return
+            crs = layer.crs().authid()
+        else:
+            self.iface.messageBar().pushMessage(
+                self.tr("Info"),
+                self.tr("Using points from model (ROI or previous load)."),
+                level=Qgis.Info
+            )
+            crs = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
 
         target = {
             'height': self.dlg.spinTargetHeight.value(),
@@ -891,7 +978,6 @@ class LAS2ENVImet:
             if lyr.name() == "Scaled_Tree_Preview":
                 QgsProject.instance().removeMapLayer(lyr.id())
 
-        crs = layer.crs().authid()
         vl = lutils.create_memory_layer(crs, "Scaled_Tree_Preview", "Point")
         lutils.add_points_to_layer(vl, transformed)
         QgsProject.instance().addMapLayer(vl)
@@ -961,19 +1047,26 @@ class LAS2ENVImet:
             if lyr.name() == "Scaled_Tree_Preview":
                 QgsProject.instance().removeMapLayer(lyr.id())
 
-        layer = self.dlg.mMapLayerComboBox.currentLayer()
-        if not layer or layer.type() != QgsMapLayerType.PointCloudLayer:
-            self.iface.messageBar().pushMessage(
-                self.tr("Error"),
-                self.tr("Please select a point cloud layer!"),
-                level=Qgis.Warning
-            )
-            return
-
         self.lad_calculated = False
         self.dlg.btnExport.setEnabled(False)
 
         if self.model.points is None:
+            layer = self.dlg.mMapLayerComboBox.currentLayer()
+            if not layer:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Error"),
+                    self.tr("No layer selected!"),
+                    level=Qgis.Warning
+                )
+                return
+            if layer.type() != QgsMapLayerType.PointCloudLayer:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Error"),
+                    self.tr("Please select a point cloud layer (.las/.laz) or load points via ROI first."),
+                    level=Qgis.Warning
+                )
+                return
+
             try:
                 points, las = load_point_cloud(layer.source())
                 self.model.load_points(points, las)
@@ -992,12 +1085,19 @@ class LAS2ENVImet:
                 )
                 return
 
-        if self.model.stem_point is None:
+        else:
             self.iface.messageBar().pushMessage(
                 self.tr("Error"),
-                self.tr("Please select a trunk point first."),
-                level=Qgis.Warning
+                self.tr("Using points from model (ROI or previous load)."),
+                level=Qgis.Info
             )
+
+        if self.model.stem_point is None:
+            self.iface.messageBar().pushMessage(
+            self.tr("Error"),
+            self.tr("Please select a trunk point first."),
+            level=Qgis.Warning
+        )
             return
 
         if self.model.transformed_points is None:
@@ -1046,7 +1146,7 @@ class LAS2ENVImet:
             self.dlg.spinLADValue.setEnabled(True)
             self.dlg.btnAddRefVoxel.setEnabled(True)
             self.dlg.btnRemoveRefVoxel.setEnabled(True)
-            self.dlg.btnCalculateLAD.setEnabled(True)
+            self.dlg.btnCalculateLAD.setEnabled(len(self.model.ref_voxels) > 0)
 
             self.lad_calculated = False
             self.dlg.btnExport.setEnabled(False)
@@ -1190,6 +1290,7 @@ class LAS2ENVImet:
             self.tr("Reference voxel added."),
             level=Qgis.Success
         )
+        self.dlg.btnCalculateLAD.setEnabled(len(self.model.ref_voxels) > 0)
 
     def on_remove_ref_voxel(self):
         # Remove the selected reference voxel from the list
@@ -1208,6 +1309,7 @@ class LAS2ENVImet:
             self.tr("Reference removed."),
             level=Qgis.Info
         )
+        self.dlg.btnCalculateLAD.setEnabled(len(self.model.ref_voxels) > 0)
 
     def on_apply_refinement(self):
         # Apply crown factor, trunk enhancement, threshold and ground clearing

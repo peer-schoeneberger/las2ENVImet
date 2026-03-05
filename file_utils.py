@@ -70,8 +70,12 @@ def save_filtered_las(original_las: laspy.LasData, point_mask: np.ndarray, outpu
 
 def create_envi_met_txt_file(voxel_corners_world: np.ndarray, lad_values: np.ndarray, stem_point: np.ndarray, reference_voxels: List[Dict[str, Any]], plant_id: str = "TREE12", 
                              description: str = "Generated using the LAS2ENVImet QGIS Plugin", voxel_size: float = 1.0, lad_threshold: float = 0.0, 
-                             ags_params: Optional[Dict[str, float]] = None, albedo: float = 0.18, transmittance: float = 0.3, emissivity: float = 0.96) -> Tuple[str, str]:
+                             ags_params: Optional[Dict[str, float]] = None, albedo: float = 0.18, transmittance: float = 0.3, emissivity: float = 0.96, output_path: str = None):
     # Generate the content of an ENVI‑met plant TXT file and write it to disk
+
+    if output_path is None:
+        raise ValueError("output_path must be specified")
+    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
 
     if lad_threshold > 0:
         lad_values = apply_lad_threshold(lad_values.copy(), lad_threshold)
@@ -241,12 +245,11 @@ def create_envi_met_txt_file(voxel_corners_world: np.ndarray, lad_values: np.nda
      <ApplyTermLString> 0 </ApplyTermLString>
   </PLANT3D>"""
 
-    filename = f"{plant_id}.txt"
-    with open(filename, 'w', encoding='utf-8') as f:
+    with open(output_path, 'w', encoding='utf-8') as f:
         f.write(txt_content)
 
     print(f"\n=== ENVI-met TXT FILE CREATED ===")
-    print(f"Filename: {filename}")
+    print(f"Filename: {output_path}")
     print(f"Grid dimensions: {nx}x{ny}x{nz} cells")
     print(f"Grid centre: i={nx // 2}, j={ny // 2}")
     print(f"Number of LAD entries: {len(entries)}")
@@ -254,7 +257,7 @@ def create_envi_met_txt_file(voxel_corners_world: np.ndarray, lad_values: np.nda
     if ags_params:
         print("AGS parameters included.")
 
-    return filename, txt_content
+    return txt_content
 
 
 # ENVI‑met database update

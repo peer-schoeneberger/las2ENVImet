@@ -2,7 +2,6 @@
 # Manager class for handling ENVI‑met export operations
 
 import os
-import shutil
 from typing import Optional
 
 from .file_utils import create_envi_met_txt_file, update_envi_met_database
@@ -18,8 +17,7 @@ class ExportManager:
         if model.voxel_corners is None or model.lad_values is None:
             raise ValueError("No voxel data available for export.")
 
-        # Writes a file named '<plant_id>.txt'
-        filename, xml_content = create_envi_met_txt_file(
+        xml_content = create_envi_met_txt_file(
             voxel_corners_world=model.voxel_corners,
             lad_values=model.lad_values,
             stem_point=model.stem_point,
@@ -31,11 +29,9 @@ class ExportManager:
             ags_params=ags_params,
             albedo=albedo,
             transmittance=transmittance,
-            emissivity=emissivity
+            emissivity=emissivity,
+            output_path=output_path
         )
-
-        if os.path.exists(filename):
-            shutil.move(filename, output_path)
 
         return xml_content
 

@@ -8,8 +8,8 @@ import numpy as np
 
 from qgis.core import (QgsProject, Qgis, QgsMapLayerProxyModel, QgsMapLayerType, QgsPointCloudLayer, QgsPointXY)
 from qgis.gui import QgsMessageBar, QgsFileWidget
-from qgis.PyQt.QtWidgets import QAction, QMessageBox
-from qgis.PyQt.QtCore import Qt, QStandardPaths, QCoreApplication, QT_VERSION_STR
+from qgis.PyQt.QtWidgets import QAction, QMessageBox, QDoubleSpinBox
+from qgis.PyQt.QtCore import Qt, QStandardPaths, QCoreApplication, QT_VERSION_STR, QLocale
 from qgis.PyQt.QtGui import QColor, QIcon
 
 from typing import Optional, List, Dict, Any
@@ -93,6 +93,10 @@ class LAS2ENVImet:
             widget.setDocumentPath(path)
         elif hasattr(widget, 'lineEdit'):
             widget.lineEdit().setText(path)
+
+    def _set_double_spinbox_locale(self):
+        for widget in self.dlg.findChildren(QDoubleSpinBox):
+            widget.setLocale(QLocale.c())
     
     def _get_documents_folder(self):
         try:
@@ -312,6 +316,8 @@ class LAS2ENVImet:
         # Initialise physiological parameters
         self.update_physiological_params()
         self.toggle_manual_physiology()
+
+        self._set_double_spinbox_locale()
 
         default_plant_id = "ID1234"
         self.dlg.linePlantID.setText(default_plant_id)

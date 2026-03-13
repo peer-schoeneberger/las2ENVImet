@@ -1,8 +1,9 @@
 [general]
 name=LAS to ENVI-met Tree Converter
 qgisMinimumVersion=3.10
+qgisMaximumVersion=4.99
 description=Converts LAS/LAZ point clouds into ENVI‑met tree models with Leaf Area Density (LAD) calculation and A‑gs physiological parameterisation
-version=1.0
+version=1.1
 author=Peer Schöneberger
 email=P.Schoeneberger@geo.uni-mainz.de
 

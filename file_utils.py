@@ -52,7 +52,8 @@ def save_filtered_las(original_las: laspy.LasData, point_mask: np.ndarray, outpu
     # Create a new LAS file containing only the points selected by point_mask (ROI)
     laspy = _ensure_laspy()
     if output_path is None:
-        output_path = tempfile.mktemp(suffix=".las")
+        with tempfile.NamedTemporaryFile(suffix=".las", delete=False) as tmp:
+            output_path = tmp.name
 
     header = laspy.LasHeader(
         point_format=original_las.header.point_format,

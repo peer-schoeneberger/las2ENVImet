@@ -4,6 +4,10 @@
 A QGIS plugin for converting LAS/LAZ point clouds of individual trees into the ENVI-met microclimate simulation model with voxel-based Leaf Area Density (LAD) and physiological A-gs parameterization.
 
 ---
+## Step-by-step tutorial
+Youtube: https://youtu.be/RTAHIMK8xJE
+
+---
 
 ## Key features
 

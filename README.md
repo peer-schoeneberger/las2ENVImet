@@ -129,6 +129,14 @@ You can download the latest version of ENVI-met [here](https://envi-met.info/dok
 - LAD calibration accuracy depends strongly on the quality and representativeness of the reference voxels.
 
 
+## Examples
+- The following link contains three sample point clouds from three different laser scanners, representing various trees and tree heights.
+  You can download the example point clouds [here](https://seafile.rlp.net/d/d8f4f7f9b624402f9a70/).
+- It has come to our attention that, for some users, QGIS cannot access all file paths on their PC.
+- If you encounter problems loading the point clouds, we therefore currently recommend placing the point cloud directly in a folder to which the QGIS environment has unrestricted access and write permissions.
+- It often works if you place the LAS file directly in the Downloads folder and specify this path in the plugin.
+
+
 ## Use cases
 - Deriving physically consistent ENVI-met trees from terrestrial or mobile LiDAR scans.
 - Parameterising urban street trees with realistic LAD and A‑gs profiles.

@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+title: "LAS to ENVI-met Tree Converter (LAS2ENVImet)"
+version: 1.2
+license: MIT
+repository-code: "https://github.com/peer-schoeneberger/las2ENVImet"
+authors:
+  - family-names: Schöneberger
+    given-names: Peer
+    affiliation: "Johannes Gutenberg University Mainz"
+    orcid: "https://orcid.org/0009-0005-5707-7222"

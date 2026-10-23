@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23591824.svg)](https://doi.org/10.5281/zenodo.23591824)
 # <img src="icon.png" width="30" height="30" alt="LAS2ENVImet Plugin Dialog"> LAS to ENVI-met Tree Converter (las2ENVImet)
 
 
@@ -89,7 +90,7 @@ Youtube: https://youtu.be/RTAHIMK8xJE
 git clone https://github.com/peer-schoeneberger/las2ENVImet.git
 ```
 2. Copy the las2envimet folder into your local QGIS plugin directory, for example:
-   - Windows: %APPDATA%\Roaming\QGIS\QGIS3\profiles\default\python\plugins\
+   - Windows: %APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\
    - Linux: ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/
 
 3. Restart QGIS and enable “LAS to ENVI-met Tree Converter” in:

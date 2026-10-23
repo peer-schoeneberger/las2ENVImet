@@ -111,7 +111,7 @@ The plugin requires:
   - **laspy[lazrs]**
   - numpy
   - matplotlib (optional, for faster polygon point-in tests)
-
+ 
 If these are missing, install them into the QGIS Python environment, e.g. via the OSGeo4W shell (Windows) or the Python environment used by QGIS:
 
 
@@ -122,6 +122,15 @@ pip install laspy[lazrs] numpy matplotlib
 You can download the latest version of QGIS [here](https://qgis.org/download/).
 
 You can download the latest version of ENVI-met [here](https://envi-met.info/doku.php?id=files:start).
+
+### Tested environment
+Version 1.2 of the plugin was tested with the following configuration:
+
+- Operating system: Windows 11
+- QGIS versions: 3.10, 3.38.2, 3.40.7, 3.40.14, 3.42.2 and 4.0.0
+- ENVI-met version used for the simulations in the accompanying publication: V5.9
+
+Other operating systems and QGIS versions may work but have not been tested systematically.
 
 ## Limitations and assumptions
 - The plugin is designed for single-tree workflows, not for large forest stands.

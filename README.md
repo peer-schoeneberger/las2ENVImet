@@ -158,4 +158,11 @@ Contributions, bug reports and feature requests are welcome:
 
 - Issue tracker: https://github.com/peer-schoeneberger/las2ENVImet/issues
 - Pull requests with bug fixes, documentation improvements or new features are appreciated.
-- If you use this plugin in scientific work, please consider citing the repository or related publications (once available).
+
+  
+## Citation
+If you use this plugin in scientific work, please cite the archived software version:
+
+Schöneberger, P. (2026). LAS to ENVI-met Tree Converter (las2ENVImet), Version 1.2. Zenodo. https://doi.org/10.5281/zenodo.23591824
+
+A peer-reviewed publication describing the workflow is currently under review; the reference will be added here once available.

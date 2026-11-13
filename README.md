@@ -230,8 +230,8 @@ i18n/        translations (build_translations.py writes .ts and .qm)
 `scripts/build_release.py` builds the plugin ZIP.
 
 ## Examples
-- The following link contains three sample point clouds from three different laser scanners, representing various trees and tree heights.
-  You can download the example point clouds [here](https://seafile.rlp.net/d/d8f4f7f9b624402f9a70/).
+- The following link contains three sample point clouds from three different laser scanners in different file formats, representing various trees and tree heights.
+  You can download the example point clouds [here](https://seafile.rlp.net/d/24616aa0b0c346adb4a0/).
 - It has come to our attention that, for some users, QGIS cannot access all file paths on their PC.
 - If you encounter problems loading the point clouds, we therefore currently recommend placing the point cloud directly in a folder to which the QGIS environment has unrestricted access and write permissions.
 - It often works if you place the LAS file directly in the Downloads folder and specify this path in the plugin.

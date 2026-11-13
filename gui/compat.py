@@ -15,21 +15,21 @@ def _first(*getters):
     raise AttributeError('no variant of the enum value exists in this QGIS version')
 
 
-# Message levels
-MSG_INFO = _first(lambda: Qgis.MessageLevel.Info, lambda: Qgis.Info)
-MSG_WARNING = _first(lambda: Qgis.MessageLevel.Warning, lambda: Qgis.Warning)
-MSG_CRITICAL = _first(lambda: Qgis.MessageLevel.Critical, lambda: Qgis.Critical)
-MSG_SUCCESS = _first(lambda: Qgis.MessageLevel.Success, lambda: Qgis.Success)
+# Message levels (getattr: spelling of older QGIS versions)
+MSG_INFO = _first(lambda: Qgis.MessageLevel.Info, lambda: getattr(Qgis, 'Info'))
+MSG_WARNING = _first(lambda: Qgis.MessageLevel.Warning, lambda: getattr(Qgis, 'Warning'))
+MSG_CRITICAL = _first(lambda: Qgis.MessageLevel.Critical, lambda: getattr(Qgis, 'Critical'))
+MSG_SUCCESS = _first(lambda: Qgis.MessageLevel.Success, lambda: getattr(Qgis, 'Success'))
 
 # Geometry type for rubber bands
-POLYGON_GEOMETRY = _first(lambda: Qgis.GeometryType.Polygon, lambda: QgsWkbTypes.PolygonGeometry)
+POLYGON_GEOMETRY = _first(lambda: Qgis.GeometryType.Polygon, lambda: getattr(QgsWkbTypes, 'PolygonGeometry'))
 
 
 def is_point_cloud_layer(layer) -> bool:
     if layer is None:
         return False
     expected = _first(lambda: Qgis.LayerType.PointCloud, lambda: QgsMapLayer.LayerType.PointCloudLayer,
-                      lambda: QgsMapLayer.PointCloudLayer)
+                      lambda: getattr(QgsMapLayer, 'PointCloudLayer'))
     return layer.type() == expected
 
 

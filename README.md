@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23591824.svg)](https://doi.org/10.5281/zenodo.23591824)
 # <img src="icon.png" width="30" height="30" alt="las2ENVImet"> LAS to ENVI-met Tree Converter (las2ENVImet)
 
 A QGIS plugin that turns LiDAR point clouds of single trees into 3D plants for the microclimate
@@ -228,6 +229,13 @@ i18n/        translations (build_translations.py writes .ts and .qm)
 
 `scripts/build_release.py` builds the plugin ZIP.
 
+## Examples
+- The following link contains three sample point clouds from three different laser scanners, representing various trees and tree heights.
+  You can download the example point clouds [here](https://seafile.rlp.net/d/d8f4f7f9b624402f9a70/).
+- It has come to our attention that, for some users, QGIS cannot access all file paths on their PC.
+- If you encounter problems loading the point clouds, we therefore currently recommend placing the point cloud directly in a folder to which the QGIS environment has unrestricted access and write permissions.
+- It often works if you place the LAS file directly in the Downloads folder and specify this path in the plugin.
+
 ## Use cases
 
 - Deriving physically consistent ENVI-met trees from terrestrial or mobile LiDAR scans
@@ -235,12 +243,18 @@ i18n/        translations (build_translations.py writes .ts and .qm)
 - Sensitivity analyses of tree geometry, LAI or rooting versus microclimate impact
 - Reproducible tree libraries from measured point clouds for research and teaching
 
-## Contributing, citation and contact
+## Contributing and contact
 
 Bug reports, feature requests and pull requests are welcome:
 [issue tracker](https://github.com/peer-schoeneberger/las2ENVImet/issues).
-If you use the plugin in scientific work, please cite this repository.
 
 Peer Schöneberger, Johannes Gutenberg University Mainz
+
+## Citation
+If you use this plugin in scientific work, please cite the archived software version:
+
+Schöneberger, P. (2026). LAS to ENVI-met Tree Converter (las2ENVImet), Version 1.2. Zenodo. https://doi.org/10.5281/zenodo.23591824
+
+A peer-reviewed publication describing the workflow is currently under review; the reference will be added here once available.
 
 Licence: see [LICENSE](LICENSE).

@@ -4,7 +4,7 @@ qgisMinimumVersion=3.18
 qgisMaximumVersion=4.99
 supportsQt6=True
 description=Converts LiDAR point clouds of single trees into ENVI-met 3D plants (ENVI-met 5.x and 6) with leaf area density, root system and A-gs physiology
-version=2.0
+version=2.0.1
 author=Peer Schöneberger
 email=P.Schoeneberger@geo.uni-mainz.de
 
@@ -17,7 +17,9 @@ repository=https://github.com/peer-schoeneberger/las2ENVImet
 # Recommended items:
 
 hasProcessingProvider=no
-changelog=2.0
+changelog=2.0.1
+    - E57 availability check without a child process, clean-up for the plugin repository checks
+    2.0
     - Export for ENVI-met 6 (JSON) in addition to ENVI-met 5.x, automatic format detection, backups, plant ID management
     - Runs under QGIS 3.18 to 4.x (Qt5 and Qt6)
     - Foliage by target LAI or total leaf area with live key figures

@@ -98,18 +98,18 @@ class PlyReader(Reader):
             from plyfile import PlyData
         except Exception:
             PlyData = None
+        cloud = None
         if PlyData is not None:
             try:
                 vertex = PlyData.read(path)['vertex']
                 names = [p.name for p in vertex.properties]
                 cloud = _cloud_from_vertex(vertex.data, names)
-                progress(1.0)
-                return cloud
             except ReaderError:
                 raise
-            except Exception:  #fall back to the built-in parser
-                pass
-        cloud = _read_builtin(path)
+            except Exception:
+                cloud = None   # fall back to the built-in parser
+        if cloud is None:
+            cloud = _read_builtin(path)
         progress(1.0)
         return cloud
 

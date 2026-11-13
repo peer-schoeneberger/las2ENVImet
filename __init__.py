@@ -24,13 +24,8 @@
 """
 
 
-# noinspection PyPep8Naming
+# Noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Load LAS2ENVImet class from file LAS2ENVImet.
-
-    :param iface: A QGIS interface instance.
-    :type iface: QgsInterface
-    """
-    #
-    from .las2envimet import LAS2ENVImet
+    # Load LAS2ENVImet class from file LAS2ENVImet
+    from .gui.plugin import LAS2ENVImet
     return LAS2ENVImet(iface)

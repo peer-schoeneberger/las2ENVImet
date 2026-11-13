@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1 (2026-11)
+
+- E57: the check whether `pye57` works with the installed numpy no longer starts a child process
+  (E57 is disabled for numpy older than 1.20).
+- Small changes for the security and Qt6 checks of the QGIS plugin repository; no change in function.
+
 ## 2.0 (2026-11)
 
 ### ENVI-met versions

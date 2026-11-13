@@ -5,7 +5,7 @@ A QGIS plugin that turns LiDAR point clouds of single trees into 3D plants for t
 model **ENVI-met**: voxel-based leaf area density (LAD), a configurable root system and A-gs
 physiology – for **ENVI-met 6** (JSON database) and **ENVI-met 5.x** (classic database).
 
-Version 2.0 · QGIS 3.18 – 4.x (Qt5 and Qt6) · Windows, Linux, macOS
+Version 2.0.1 · QGIS 3.18 – 4.x (Qt5 and Qt6) · Windows, Linux, macOS
 
 Video tutorial of version 1: https://youtu.be/RTAHIMK8xJE
 

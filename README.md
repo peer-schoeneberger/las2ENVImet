@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23591824.svg)](https://doi.org/10.5281/zenodo.23591824)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24368210.svg)](https://doi.org/10.5281/zenodo.24368210)
 # <img src="icon.png" width="30" height="30" alt="las2ENVImet"> LAS to ENVI-met Tree Converter (las2ENVImet)
 
 A QGIS plugin that turns LiDAR point clouds of single trees into 3D plants for the microclimate
